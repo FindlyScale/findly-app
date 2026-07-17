@@ -57,6 +57,9 @@ export default function App() {
             quiz, right from your dashboard.
           </li>
         </ul>
+        <p style={{ fontSize: "0.85rem", opacity: 0.7 }}>
+          <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Service</a>
+        </p>
       </div>
     </div>
   );
