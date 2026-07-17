@@ -1,7 +1,7 @@
 # Privacy Policy — Findly
 
-**Effective date:** [DATA PUBLICĂRII]
-**Contact:** [EMAIL SUPORT]
+**Effective date:** July 17, 2026
+**Contact:** contactfindlyapp@gmail.com
 
 This Privacy Policy describes how Findly ("the App", "we", "us") collects, uses,
 and stores information when you install and use the App on your Shopify store.
@@ -65,12 +65,12 @@ The App implements all of Shopify's mandatory privacy webhooks:
 - **Shop data erasure**: all store data is permanently deleted as described in
   section 3.
 
-If you have a privacy question or request, contact us at [EMAIL SUPORT].
+If you have a privacy question or request, contact us at contactfindlyapp@gmail.com.
 
 ## 5. Where data is stored
 
 App data is stored on infrastructure provided by our hosting provider
-([HOSTING PROVIDER, ex. Railway]) and is protected by industry-standard
+(Railway) and is protected by industry-standard
 security measures. Access credentials issued by Shopify are stored encrypted
 at rest by our database provider.
 

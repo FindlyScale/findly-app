@@ -1,6 +1,5 @@
-// Public page - no auth, linked from the App Store listing. Update
-// SUPPORT_EMAIL when the dedicated support address exists.
-const SUPPORT_EMAIL = "nicosgabriel1999@gmail.com";
+// Public page - no auth, linked from the App Store listing.
+const SUPPORT_EMAIL = "contactfindlyapp@gmail.com";
 const EFFECTIVE_DATE = "July 17, 2026";
 
 export const meta = () => [{ title: "Terms of Service — Findly" }];

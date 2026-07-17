@@ -1,7 +1,7 @@
 # Terms of Service — Findly
 
-**Effective date:** [DATA PUBLICĂRII]
-**Contact:** [EMAIL SUPORT]
+**Effective date:** July 17, 2026
+**Contact:** contactfindlyapp@gmail.com
 
 These Terms of Service ("Terms") govern your use of the Findly app ("the App")
 for Shopify. By installing or using the App you agree to these Terms.
@@ -77,10 +77,10 @@ deleted as described in our Privacy Policy.
 
 ## 10. Governing law
 
-These Terms are governed by the laws of [JURISDICȚIA TA, ex. România], without
+These Terms are governed by the laws of Romania, without
 regard to conflict-of-law rules. Disputes will be resolved in the courts of
 that jurisdiction.
 
 ## 11. Contact
 
-Questions about these Terms: [EMAIL SUPORT].
+Questions about these Terms: contactfindlyapp@gmail.com.
