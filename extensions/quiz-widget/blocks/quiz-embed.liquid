@@ -1,0 +1,10 @@
+{{ 'quiz.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'findly-core.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quiz-embed.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Findly Quiz (auto/popup)",
+  "target": "body"
+}
+{% endschema %}

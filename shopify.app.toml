@@ -1,0 +1,48 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "5b35fb659ed3bd6081f1d7e289449ae1"
+name = "findly-app"
+application_url = "https://example.com"
+embedded = true
+
+[access_scopes]
+# read_orders: attribute orders back to a quiz for conversion tracking
+# (banner results mode) via the orders/create webhook.
+# read_products: Admin API scope, needed to sync the shop's product tags
+# and collections (productTags/collections queries) for the tag/collection
+# autocomplete in the quiz builder.
+# unauthenticated_read_product_listings: Storefront API scope, needed for
+# the banner results mode to fetch matched product data.
+scopes = "read_orders,read_products,unauthenticated_read_product_listings"
+
+[app_proxy]
+url = "https://example.com/proxy"
+prefix = "apps"
+subpath = "findly"
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/uninstalled"
+  topics = [ "app/uninstalled" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/scopes_update"
+  topics = [ "app/scopes_update" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/orders/create"
+  topics = [ "orders/create" ]
+
+  [webhooks.privacy_compliance]
+  customer_data_request_url = "https://example.com/webhooks/customers/data_request"
+  customer_deletion_url = "https://example.com/webhooks/customers/redact"
+  shop_deletion_url = "https://example.com/webhooks/shop/redact"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true

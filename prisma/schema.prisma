@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+// Cached snapshot of the shop's own catalog (product tags + collections),
+// refreshed from the Admin API once a day or on demand - lets the quiz
+// builder suggest real tags/collections instead of the merchant having to
+// remember and retype them by hand. One row per shop, not per-quiz.
+model ShopCatalog {
+  shop        String    @id
+  tags        String    @default("[]") // JSON array of strings
+  collections String    @default("[]") // JSON array of {handle, title}
+  syncedAt    DateTime?
+}
+
+// Multiple quizzes per shop, each independently published/draft with its
+// own placement. collectionHandle only applies (and is only shown in the
+// UI) when placementMode is "collection".
+model Quiz {
+  id              String   @id @default(cuid())
+  shop            String
+  title           String   @default("Find your perfect product")
+  published       Boolean  @default(false)
+  collectionHandle String?
+
+  // Design
+  accentColor     String   @default("#111111")
+  backgroundColor String   @default("#ffffff")
+  textColor       String   @default("#111111")
+  borderColor     String   @default("#e1e1e1")
+  borderWidth     Int      @default(1)
+  borderRadius    Int      @default(12)
+  // One of "480px" (standard), "50%" (half), "100%" (full) - a raw CSS
+  // value so the widget can apply it directly with no unit guessing.
+  maxWidth        String   @default("480px")
+  customCss       String   @default("")
+
+  // Typography. fontFamily is one of "inherit" (match the theme), "sans",
+  // "serif", "mono" - generic stacks only, no external font loading.
+  fontFamily        String @default("inherit")
+  questionFontSize   Int    @default(20)
+  answerFontSize     Int    @default(15)
+
+  // "View cart" link styling (addToCartBehavior "link" only).
+  cartNoticeBackgroundColor String  @default("#111111")
+  cartNoticeTextColor       String  @default("#ffffff")
+  cartNoticeBorderColor     String  @default("#111111")
+  cartNoticeBorderWidth     Int     @default(0)
+  cartNoticeBorderRadius    Int     @default(8)
+  cartNoticeFullWidth       Boolean @default(false)
+
+  // Placement: "auto" (Homepage only), "collection" (a specific collection
+  // page, via collectionHandle below), "popup" (overlay, any page),
+  // "custom" (merchant drags the block themselves, any page).
+  placementMode      String  @default("auto")
+  // "redirect" (send to the store's native /search page, free) or "banner"
+  // (render matched products inline with Add to Cart, Standard plan only -
+  // gated the same way as placementMode "custom" and customCss).
+  resultsMode         String  @default("redirect")
+  // How the tags picked across all answered questions combine: "any"
+  // (OR - a product matching at least one tag counts, the broad default)
+  // or "all" (AND - a product must carry every picked tag). Applies to
+  // both redirect and banner results. Price answers always AND on top.
+  tagMatchMode        String  @default("any")
+  // What happens right after "Add to cart" in banner results mode: "link"
+  // shows a "View cart" link so the shopper can keep browsing the other
+  // matches, "redirect" sends them straight to /cart.
+  addToCartBehavior  String  @default("link")
+  popupDelaySeconds   Int     @default(5)
+  popupShowCloseButton Boolean @default(true)
+  // If true, the popup shows on every homepage visit and the frequency
+  // cooldown below is ignored.
+  popupAlwaysOnHomepage Boolean @default(false)
+  // Minimum minutes between popup appearances for the same visitor, 0-1440
+  // (24h). Ignored when popupAlwaysOnHomepage is true.
+  popupFrequencyMinutes Int     @default(1440)
+  // The floating "Take the quiz" button that reopens the popup. "left" and
+  // "right" render as a vertical tab hugging that screen edge, centered;
+  // "bottom-left"/"bottom-right" as a round pill in that corner.
+  popupButtonPosition        String @default("left")
+  popupButtonBackgroundColor String @default("#111111")
+  popupButtonTextColor       String @default("#ffffff")
+  // Only applies to "auto"/"collection" placement (inline on the page, not
+  // popup): "immediate" mounts the quiz right away like before; "button"
+  // shows a "Take the quiz" trigger first (see textFloatingButton) and only
+  // mounts the quiz once the shopper clicks it.
+  inlineShowMode        String  @default("immediate")
+
+  // Banner results grid layout (resultsMode "banner" only, Premium plan).
+  bannerColumns         Int     @default(3)
+  bannerMaxProducts     Int     @default(8)
+  // "add-to-cart" adds the item and tracks the conversion as before;
+  // "view-product" turns the button into a plain link to the product page
+  // instead (no cart attribute tagging, so no conversion tracking on click).
+  bannerButtonType      String  @default("add-to-cart")
+  // Opt-in - / + quantity selector next to Add to cart, so shoppers can
+  // add several of a product at once. Off by default, and only applies
+  // while bannerButtonType is "add-to-cart".
+  bannerShowQuantity    Boolean @default(false)
+  bannerContentAlign    String  @default("left") // "left" | "center" | "right"
+  // Product image shape - mirrors the options Shopify's own themes offer:
+  // "natural" (no crop, keep the image's own ratio), "square" (1:1),
+  // "portrait" (3:4), "landscape" (4:3), or "custom" - fixed pixel
+  // dimensions via bannerImageWidth/bannerImageHeight below.
+  bannerImageAspect     String  @default("square")
+  bannerImageWidth      Int     @default(220)
+  bannerImageHeight     Int     @default(220)
+  // How wide the whole results grid is. Raw CSS value ("720px", "100%").
+  // Empty string = match the quiz card's own width setting.
+  bannerWidth           String  @default("")
+  // Product titles get clamped to this many lines with a trailing "…" so
+  // every card in the grid lines up. 0 = never clamp, show the full title.
+  bannerTitleMaxLines   Int     @default(2)
+  bannerTitleColor      String  @default("#111111")
+  bannerPriceColor      String  @default("#111111")
+  bannerTitleFontSize   Int     @default(14)
+  bannerPriceFontSize   Int     @default(13)
+  bannerButtonBackgroundColor String @default("#111111")
+  bannerButtonTextColor String  @default("#ffffff")
+  // "auto" formats the price using the store's real currency (Intl,
+  // current behavior). "custom" replaces the currency symbol/code with
+  // whatever the merchant types (e.g. "RON", "lei") instead of relying on
+  // the browser's currency formatting.
+  priceFormat           String  @default("auto")
+  priceCustomSymbol     String  @default("")
+  priceSymbolPosition   String  @default("after") // "before" | "after"
+
+  // Storefront chrome text (not the questions/answers themselves, which the
+  // merchant already writes in whatever language they want) - lets a
+  // non-English store translate the widget's built-in copy. Every string
+  // the widget ever renders on its own (not sourced from quiz/product data)
+  // must have a field here - there is no untranslatable fallback text.
+  textFindingMatches  String @default("Finding your matches…")
+  textError           String @default("Something went wrong. Please try again.")
+  // {current} and {total} are replaced by the widget at render time.
+  textProgress        String @default("Question {current} of {total}")
+  textFloatingButton  String @default("Take the quiz")
+  // Banner results mode only (Premium plan).
+  textNoResults       String @default("No matches found.")
+  textAddToCart       String @default("Add to cart")
+  textAddingToCart    String @default("Adding…")
+  textAddedToCart     String @default("Added")
+  textViewCart        String @default("View cart →")
+  textViewProduct     String @default("View product")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  questions   Question[]
+  completions QuizCompletion[]
+  views       QuizView[]
+  addToCarts  QuizAddToCart[]
+  conversions QuizConversion[]
+
+  @@index([shop])
+}
+
+model Question {
+  id       String   @id @default(cuid())
+  quizId   String
+  quiz     Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text     String
+  position Int      @default(0)
+  answers  Answer[]
+}
+
+// An answer matches products either by tag, or by price range (minPrice/
+// maxPrice, either end optional for open-ended ranges like "under $75") -
+// never both. Price answers act as an AND filter on top of the tag OR
+// group, rather than another OR-ed option, so "Under $75" actually narrows
+// results instead of pulling in unrelated cheap products.
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  tag        String?
+  minPrice   Float?
+  maxPrice   Float?
+  position   Int      @default(0)
+}
+
+model QuizCompletion {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  // JSON-encoded array of Answer ids the visitor picked, e.g. ["cl123","cl456"].
+  // Kept as a single column instead of a join table since it's write-once
+  // and only ever read back in bulk for the "top answers" stat.
+  answerIds String   @default("[]")
+  createdAt DateTime @default(now())
+}
+
+// Recorded once when the widget first renders for a visitor - the top of
+// the funnel, compared against QuizCompletion for a completion rate.
+model QuizView {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// Recorded when a visitor clicks "Add to cart" on a banner-mode result.
+model QuizAddToCart {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// Recorded from the orders/create webhook when an order's cart attributes
+// carry our findly_quiz_id tag - orderId is unique so a redelivered webhook
+// can never double-count the same order.
+model QuizConversion {
+  id           String   @id @default(cuid())
+  quizId       String
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  orderId      String   @unique
+  amount       Float
+  currencyCode String
+  createdAt    DateTime @default(now())
+}

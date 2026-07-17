@@ -1,0 +1,12 @@
+<div class="findly-quiz" data-findly-quiz data-proxy-base="/apps/findly"></div>
+
+{{ 'quiz.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'findly-core.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quiz.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Findly Quiz",
+  "target": "section"
+}
+{% endschema %}
